@@ -3,6 +3,7 @@ import cv2
 from threading import Thread
 import numpy as np
 import pickle
+import time
 # import functools
 
 
@@ -40,51 +41,63 @@ camera = 0
 width = 1280
 height = 720
 fps = 60
+prior_event = None
+prior_flag = None
 
+cool_down_count = 20
+cool_down = cool_down_count
+# cv2.EVENT_LBUTTONDBLCLK
 
 def send_controls(sock, event, x, y, width=1920, height=1080):
     message = (event, x/width, y/height)
-    print('message=', message)
+    # print('message=', message)
     try:
         # message_bytes = np.array(message).tobytes()
         message_bytes = pickle.dumps(message)
+        message_length = len(message_bytes)
+        # print(message_length)
+        sock.send(message_length.to_bytes(4, 'big'))
         sock.send(message_bytes)
     except Exception as e:
         print(e)
 
 def on_mouse(event, x, y, flags, param):
-    global l_point, r_point, sock, width, height
+    global l_point, r_point, sock, width, height, prior_event, cool_down, cool_down_count
+
+    # event falgs
+    #   0    0   :移动
+    #   1    1   :左键按下
+    #   4    0   :左键释放
+    #   7    1   :左键双击
+    #   2    2   :右键按下
+    #   5    0   :右键释放
+    #   8    2   :右键双击
+    #   10   7864320   :滚轮上滚
+    #   10   -7864320   :滚轮下滚
+    #   9    7864320   :滚轮上滚
+
     print('event:', event, x, y, flags, param)
-    # if event == cv2.EVENT_LBUTTONDOWN:  # 左键点击
-    #     print('event:', event, x, y, flags, param)
-    #     send_controls(sock, event, x, y, width, height)
+    if event == 1 or event == 7:  # 左键按下
+        # print('左键按下')
+        send_controls(sock, 1, x, y, width, height)
+    elif event == 4:
+        # print('左键释放')
+        send_controls(sock, 3, x, y, width, height)
+    elif event == 2 or event == 8:  # 右键按下
+        # print('右键按下')
+        send_controls(sock, 2, x, y, width, height)
+    elif event == 5:
+        # print('右键释放')
+        send_controls(sock, 4, x, y, width, height)
+    elif event == 0:  # 移动
+        # print('移动')
+        if cool_down:
+            cool_down -= 1
+        else:
+            send_controls(sock, 0, x, y, width, height)
+            cool_down = cool_down_count
+        # time.sleep(0.1)
 
-    # elif event == cv2.EVENT_RBUTTONDOWN:  # 右键点击
-    #     print('event:', event, x, y, flags, param)
-    #     send_controls(sock, event, x, y, width, height)
-
-    # elif event == cv2.EVENT_MOUSEMOVE and (flags & cv2.EVENT_FLAG_LBUTTON):               #按住左键拖曳
-    #     cv2.rectangle(img2, point1, (x,y), (255,0,0), 5)
-    #     cv2.imshow('image', img2)
-    # elif event == cv2.EVENT_LBUTTONUP:         #左键释放
-    #     point2 = (x,y)
-    #     cv2.rectangle(img2, point1, point2, (0,0,255), 5) 
-    #     cv2.imshow('image', img2)
-    #     min_x = min(point1[0],point2[0])     
-    #     min_y = min(point1[1],point2[1])
-    #     width = abs(point1[0] - point2[0])
-    #     height = abs(point1[1] -point2[1])
-    #     cut_img = img[min_y:min_y+height, min_x:min_x+width]
-
-    # elif event == cv2.EVENT_MBUTTONDOWN:  # 中键点击
-    #     m_point = (x,y)
-    #     print('m=', m_point)
-    # elif event == cv2.EVENT_LBUTTONDBLCLK:  # 左键双击
-    #     ld_point = (x,y)
-    #     print('ld=', ld_point)
-    # elif event == cv2.EVENT_RBUTTONDBLCLK:  # 右键双击
-    #     rd_point = (x,y)
-    #     print('rd=', rd_point)
 
 def main(host, port, camera=0, width=1280, height=720, fps=60):
     global l_point, r_point, sock
@@ -96,16 +109,16 @@ def main(host, port, camera=0, width=1280, height=720, fps=60):
     cv2.namedWindow('frame')
     cv2.setMouseCallback('frame', on_mouse)
 
-    # cam = cv2.VideoCapture(camera)
-    # # 设置摄像头参数
-    # cam.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-    # cam.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-    # cam.set(cv2.CAP_PROP_FPS, fps)
-    ret = True
-    frame = cv2.imread('boar.jpg')
-    frame = cv2.resize(frame, (width, height))
+    cam = cv2.VideoCapture(camera)
+    # 设置摄像头参数
+    cam.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    cam.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    cam.set(cv2.CAP_PROP_FPS, fps)
+    # ret = True
+    # frame = cv2.imread('test.jpg')
+    # frame = cv2.resize(frame, (width, height))
     while True:
-        # ret, frame = cam.read()
+        ret, frame = cam.read()
         if not ret:
             break
         cv2.imshow('frame', frame)
@@ -116,9 +129,9 @@ def main(host, port, camera=0, width=1280, height=720, fps=60):
 
 
 if __name__ == '__main__':
-    host = '00:A6:23:12:0F:2C'  # 远程蓝牙地址
-    # host = '00:A6:23:12:0F:DC'
-    port = 4
+    host = '00:A6:23:12:0F:DC'  # 远程蓝牙地址
+    # host = '00:A6:23:12:0F:2C'
+    port = 1
 
     # t = Thread(target=transfer_image, args=(host, port, 0))
     # t.start()

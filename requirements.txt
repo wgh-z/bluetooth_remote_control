@@ -1,3 +1,9 @@
-opencv-python==4.9.0.80
+pybluez==0.23
 pybluez2==0.46
+
+# control end
+opencv-python==4.9.0.80
 numpy==1.26.4
+
+# controlled end
+pyautogui==0.9.54
