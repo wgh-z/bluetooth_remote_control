@@ -5,15 +5,16 @@ import pickle
 from flask import Flask, Response, jsonify, request, render_template
 from flask_cors import CORS
 from threading import Thread
+from queue import Queue
 
+q = Queue(20)
 
 #开始主程序
 app = Flask(__name__)
 
 CORS(app, supports_credentials=True)
 
-def gen(cfg):
-    """视频流生成"""
+def read_frame(cfg):
     camera = cfg['camera']
     width = cfg['width']
     height = cfg['height']
@@ -21,15 +22,22 @@ def gen(cfg):
 
     cam = cv2.VideoCapture(camera)
     # 设置摄像头参数
+    cam.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M','J', 'P', 'G'))
     cam.set(cv2.CAP_PROP_FRAME_WIDTH, width)
     cam.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
     cam.set(cv2.CAP_PROP_FPS, fps)
-
     while True:
         ret, frame = cam.read()
         if not ret:
             break
-        frame = cv2.resize(frame, (width, height))
+        q.put(frame)
+
+
+def gen(cfg):
+    """视频流生成"""
+    while True:
+        frame = q.get()
+        # frame = cv2.resize(frame, (width, height))
         data = cv2.imencode('.jpg', frame)[1]
         frame = data.tobytes()
         yield (b'--frame\r\n'
@@ -53,10 +61,8 @@ def dblclick():
     data = request.json
     x_rate = float(data['x'])
     y_rate = float(data['y'])
-    print('db===', x_rate, y_rate)
-
+    print('dbclick===', x_rate, y_rate)
     send_controls(sock, 7, x_rate, y_rate, width, height)
-    print('data==', data)
     return jsonify({
       'code': 0
     })
@@ -72,7 +78,6 @@ def click():
     y_rate = float(data['y'])
     print('click===', x_rate, y_rate)
     send_controls(sock, 3, x_rate, y_rate, width, height)
-    print('data==', data)
     return jsonify({
       'code': 0
     })
@@ -136,3 +141,6 @@ if __name__ == '__main__':
                               }
                         )
     flask_thread.start()
+
+    read_thread = Thread(target=read_frame, args=(cfg,))
+    read_thread.start()
