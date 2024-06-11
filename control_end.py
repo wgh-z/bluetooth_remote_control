@@ -28,7 +28,7 @@ def gen(cfg):
         ret, frame = cam.read()
         if not ret:
             break
-        frame = cv2.resize(frame, (1920, 1080))
+        frame = cv2.resize(frame, (width, height))
         data = cv2.imencode('.jpg', frame)[1]
         frame = data.tobytes()
         yield (b'--frame\r\n'
@@ -46,9 +46,9 @@ def dblclick():
     height = cfg['height']
 
     data = request.json['data']
-    x = int(float(data['x']) * 1920)
-    y = int(float(data['y']) * 1080)
-    send_controls(sock, 7, x, y, width, height)
+    x_rate = float(data['x'])
+    y_rate = float(data['y'])
+    send_controls(sock, 7, x_rate, y_rate, width, height)
     return jsonify({
       'code': 0
     })
@@ -60,9 +60,9 @@ def click():
     height = cfg['height']
 
     data = request.json['data']
-    x = int(float(data['x']) * 1920)
-    y = int(float(data['y']) * 1080)
-    send_controls(sock, 3, x, y, width, height)
+    x_rate = float(data['x'])
+    y_rate = float(data['y'])
+    send_controls(sock, 3, x_rate, y_rate, width, height)
     print(data)
     return jsonify({
       'code': 0
@@ -79,11 +79,12 @@ def input():
       'code': 0
     })
 
-def send_controls(sock, event, x=None, y=None, width=1920, height=1080, keyboard=False):
+def send_controls(sock, event, x_rate=None, y_rate=None,
+                  width=1920, height=1080, keyboard=False):
     if keyboard:
         message = event
     else:
-        message = (event, x, y, width, height)
+        message = (event, x_rate, y_rate, width, height)
     # print('message=', message)
     try:
         # message_bytes = np.array(message).tobytes()
