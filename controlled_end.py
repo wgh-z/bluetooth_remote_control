@@ -5,14 +5,14 @@ import pickle
 
 width, height = pyautogui.size()  # 屏幕宽高
 
-def controls_execution(message, width=1920, height=1080):
+def controls_execution(message):
     print("接收到的消息：", message)
     if len(message) == 1:
         key = message
         print(f"按键：{key}")
         pyautogui.press(key)
     elif len(message) == 5:
-        event, x_rate, y_rate = message
+        event, x_rate, y_rate, width, height = message
         x, y = x_rate * width, y_rate * height
 
         if event == 3:  # 左键单击
