@@ -7,23 +7,21 @@ width, height = pyautogui.size()  # 屏幕宽高
 
 def mouse_execution(message, width=1920, height=1080):
     print("接收到的消息：", message)
-    event, x_rate, y_rate = message
-    x, y = x_rate * width, y_rate * height
-    if event == 1:  # 左键按下
-        # print(f"左键按下{x},{y}")
-        pyautogui.mouseDown(x, y)
-    elif event == 2:  # 右键按下
-        # print(f"右键按下{x},{y}")
-        pyautogui.mouseDown(button='right', x=x, y=y)
-    elif event == 3:  # 左键释放
-        # print(f"左键释放{x},{y}")
-        pyautogui.mouseUp(x, y)
-    elif event == 4:  # 右键释放
-        # print(f"右键释放{x},{y}")
-        pyautogui.mouseUp(button='right', x=x, y=y)
-    elif event == 0:
-        # print(f"移动到{x},{y}")
-        pyautogui.moveTo(x, y)
+    try:
+        event, x_rate, y_rate = message
+        x, y = x_rate * width, y_rate * height
+
+        if event == 3:  # 左键单击
+            # print(f"左键单击{x},{y}")
+            pyautogui.click(x, y)
+        elif event == 7:  # 左键双击
+            # print(f"左键双击{x},{y}")
+            pyautogui.doubleClick(x, y)
+
+    except TypeError as e:
+        key = message
+        pyautogui.press(key)
+
 
 def main(my_addr):
     server_sock = bluetooth.BluetoothSocket()
