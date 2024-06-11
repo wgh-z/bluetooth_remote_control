@@ -15,8 +15,15 @@
             padding: 0;
             margin: 0
         }
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
 
         img {
+            display: block;
+            /* object-fit: contain; */
+            height: 100%;
             width: 100%;
         }
     </style>
@@ -37,7 +44,7 @@
 
                     var x_rate = x / img_width;
                     var y_rate = y / img_height;
-                    sendPosition('/click', x_rate, y_rate)
+                    sendPosition('/click', x_rate, y_rate, null)
                 }, 300);
             }
         }).dblclick(function (event) {
@@ -82,11 +89,11 @@
             } else if (key === 107) {
                 // +号
                 console.log('+');
-                sendPosition('/input', null, null, 'down')
+                sendPosition('/input', null, null, '+')
             } else if (key === 109) {
                 // -号
                 console.log('-');
-                sendPosition('/input', null, null, 'down')
+                sendPosition('/input', null, null, '-')
             }
         }
 
@@ -94,12 +101,12 @@
             $.ajax({
                 url: position,
                 type: type,
-                data: {
+                contentType: 'application/json',
+                data: JSON.stringify({
                     x: xrate,
                     y: yrate,
                     key: key
-                },
-                dataType: 'json',
+                }),
                 success: function (data) {
                     console.log(data)
                 },
