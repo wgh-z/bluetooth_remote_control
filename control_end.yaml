@@ -1,0 +1,9 @@
+bluetooth_ip: 00:A6:23:12:0F:2C
+bluetooth_port: 4
+camera: 0
+flask_ip: 0.0.0.0
+flask_port: 3001
+width: 1280
+height: 720
+fps: 60
+cool_down_count: 20
