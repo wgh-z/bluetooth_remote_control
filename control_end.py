@@ -91,7 +91,7 @@ def input():
 def send_controls(sock, event, x_rate=None, y_rate=None,
                   width=1920, height=1080, keyboard=False):
     if keyboard:
-        message = event
+        message = (event, )
     else:
         message = (event, x_rate, y_rate, width, height)
     # print('message=', message)

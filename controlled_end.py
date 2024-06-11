@@ -8,7 +8,7 @@ width, height = pyautogui.size()  # 屏幕宽高
 def controls_execution(message):
     print("接收到的消息：", message)
     if len(message) == 1:
-        key = message
+        key, = message
         print(f"按键：{key}")
         pyautogui.press(key)
     elif len(message) == 5:
