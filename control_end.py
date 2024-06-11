@@ -4,6 +4,7 @@ import cv2
 import pickle
 from flask import Flask, Response, jsonify, request, render_template
 from flask_cors import CORS
+from threading import Thread
 
 
 #开始主程序
@@ -49,10 +50,13 @@ def dblclick():
     width = cfg['width']
     height = cfg['height']
 
-    data = request.json['data']
+    data = request.json
     x_rate = float(data['x'])
     y_rate = float(data['y'])
+    print('db===', x_rate, y_rate)
+
     send_controls(sock, 7, x_rate, y_rate, width, height)
+    print('data==', data)
     return jsonify({
       'code': 0
     })
@@ -63,11 +67,12 @@ def click():
     width = cfg['width']
     height = cfg['height']
 
-    data = request.json['data']
+    data = request.json
     x_rate = float(data['x'])
     y_rate = float(data['y'])
+    print('click===', x_rate, y_rate)
     send_controls(sock, 3, x_rate, y_rate, width, height)
-    print(data)
+    print('data==', data)
     return jsonify({
       'code': 0
     })
@@ -76,7 +81,7 @@ def click():
 def input():
     global sock
 
-    data = request.json['data']
+    data = request.json
     key = data['key']
     send_controls(sock, event=key, keyboard=True)  # left, right, up, down, +, -
     return jsonify({
@@ -119,4 +124,15 @@ if __name__ == '__main__':
     sock.connect((bluetooth_ip, bluetooth_port))
     print(f"蓝牙已连接{bluetooth_ip}:{bluetooth_port}")
 
-    app.run(host=flask_ip, port=flask_port, debug=True, threaded=True, processes=True)
+    # app.run(host=flask_ip, port=flask_port, debug=True, threaded=True, processes=True)
+    flask_thread = Thread(target=app.run,
+                          kwargs={
+                              'host': flask_ip,
+                              'port':flask_port,
+                              'debug': True,
+                              'use_reloader': False,
+                              'threaded': True,
+                            #   'processes':True
+                              }
+                        )
+    flask_thread.start()
