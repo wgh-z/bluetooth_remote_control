@@ -73,6 +73,9 @@ def main(my_addr):
 
 
 if __name__ == "__main__":
-    my_addr = '00:A6:23:12:0F:DC'  # 本机蓝牙地址
-    # addr = "00:A6:23:12:0F:2C"  # 远程蓝牙地址
+    # 读取蓝牙地址
+    with open('controlled_end.txt', 'r') as f:
+        my_addr = f.readline().strip()  # 本机蓝牙地址
+
+    print(f"本机蓝牙地址：{my_addr}")
     main(my_addr)

@@ -129,12 +129,14 @@ def main(host, port, camera=0, width=1280, height=720, fps=60):
 
 
 if __name__ == '__main__':
-    host = '00:A6:23:12:0F:DC'  # 远程蓝牙地址
-    # host = '00:A6:23:12:0F:2C'
-    port = 1
+    # 读取蓝牙地址
+    with open('control_end.txt', 'r') as f:
+        bluetooth_host_addr = f.readline().strip()  # 远程蓝牙地址
+        bluetooth_port = int(f.readline().strip())  # 远程蓝牙端口
+        host = f.readline().strip()  # flask绑定ip
+        port = int(f.readline().strip())  # flask绑定端口
 
-    # t = Thread(target=transfer_image, args=(host, port, 0))
-    # t.start()
-    # t.join()
-    # print('Done.')
-    main(host, port, camera, width, height, fps)
+
+    # host = '00:A6:23:12:0F:DC'  # 远程蓝牙地址
+    # 00:A6:23:12:0F:2C
+    main(bluetooth_host_addr, bluetooth_port, camera, width, height, fps)
