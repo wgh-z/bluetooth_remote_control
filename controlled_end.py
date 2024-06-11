@@ -5,22 +5,22 @@ import pickle
 
 width, height = pyautogui.size()  # 屏幕宽高
 
-def mouse_execution(message, width=1920, height=1080):
+def controls_execution(message, width=1920, height=1080):
     print("接收到的消息：", message)
-    try:
+    if len(message) == 1:
+        key = message
+        print(f"按键：{key}")
+        pyautogui.press(key)
+    elif len(message) == 5:
         event, x_rate, y_rate = message
         x, y = x_rate * width, y_rate * height
 
         if event == 3:  # 左键单击
-            # print(f"左键单击{x},{y}")
+            print(f"左键单击{x},{y}")
             pyautogui.click(x, y)
         elif event == 7:  # 左键双击
-            # print(f"左键双击{x},{y}")
+            print(f"左键双击{x},{y}")
             pyautogui.doubleClick(x, y)
-
-    except TypeError as e:
-        key = message
-        pyautogui.press(key)
 
 
 def main(my_addr):
@@ -58,7 +58,7 @@ def main(my_addr):
                     if message[0] == -1:  # 结束
                         break
                     else:
-                        mouse_execution(message)
+                        controls_execution(message)
             except OSError as e:
                 print(e)
                 break
