@@ -53,9 +53,10 @@ def main(my_addr):
                 message_length = int.from_bytes(length_bytes, 'big')
 
                 message_bytes = client_sock.recv(message_length)
-                print(message_bytes)
                 if message_bytes:
                     message = pickle.loads(message_bytes)
+                    # print(message)
+
                     if message[0] == -1:  # 结束
                         break
                     else:
